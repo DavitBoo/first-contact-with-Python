@@ -7,6 +7,8 @@ from datetime import datetime
 from find_kw import get_kw, get_sentence
 import requests
 
+from urllib.parse import urlparse
+
 def validate_url(url):
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
@@ -21,10 +23,16 @@ def validate_url(url):
     
     return False
 
-url = input('Inseta la URL para analizar las palabras clave. ej: www.google.com:\n')
-query_url = 'https://' + url
+def process_url(url):
+    parsed_url = urlparse(url)
+    if not parsed_url.scheme:
+        url = 'https://' + url
+    return url
 
-if(validate_url(query_url)):
+url = input('Inseta la URL para analizar las palabras clave. ej: www.google.com:\n')
+query_url = process_url(url)
+
+if validate_url(query_url):
     
 
     wb = Workbook()
@@ -58,6 +66,12 @@ if(validate_url(query_url)):
     for col in range(1, 3):
         ws[get_column_letter(col) + '1'].font = Font(bold=True, color="0066AAFF")
         ws2[get_column_letter(col) + '1'].font = Font(bold=True, color="0066AAFF")
+
+    # eliminamos http o https para crear un nombre de archivo amigable al usuario
+    if "http://" in url:
+        url = url.replace("http://", "")
+    elif "https://" in url:
+        url = url.replace("https://", "")
 
     if "/" in url:
         url = url.split("/", 1)[0]
