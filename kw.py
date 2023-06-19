@@ -4,10 +4,10 @@ from openpyxl.styles import Font
 
 from datetime import datetime
 
-from find_kw import get_kw, get_sentence
+from find_kw import get_kw, get_sentence, get_internal_links, check_link_status
 import requests
 
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 
 def validate_url(url):
     try:
@@ -59,6 +59,20 @@ if validate_url(query_url):
     for phrase, count in sentence_list:
                 phrase_str = " ".join(phrase)
                 ws2.append([phrase_str, count])
+    
+
+    internal_links = get_internal_links(query_url)
+    checked_urls = set()
+
+    ws3 = wb.create_sheet(title='Internal Links')
+    ws3.append(['Link', 'Status'])
+
+    for link in internal_links:
+        link_url = urljoin(query_url, link)
+        if link_url not in checked_urls:
+            status = check_link_status(link_url)
+            ws3.append([link, status])
+            checked_urls.add(link_url)
 
     current_timestamp = datetime.now()
     formatted_timestamp = current_timestamp.strftime('%Y%m%d%H%M%S')
@@ -79,3 +93,5 @@ if validate_url(query_url):
     wb.save(f'{formatted_timestamp}-{url}.xlsx')
 else:
     print("La URL proporcionada no es válida o no se puede acceder a ella. Verifica la URL e intenta nuevamente.")
+
+

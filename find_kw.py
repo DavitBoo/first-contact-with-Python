@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 from collections import Counter
 from nltk import ngrams
 
+from urllib.parse import urlparse, urljoin 
+
 def get_kw(url):
     # Obtener el contenido de la web
     # url = "https://www.elmundo.es/"
@@ -53,3 +55,34 @@ def get_sentence(url):
         
     except:
         print("Algo falla con esa web")
+
+
+def get_internal_links(url):
+    try:
+        r = requests.get(url)
+        soup = BeautifulSoup(r.content, "html.parser")
+        print(soup)
+        internal_links = []
+        domain = urlparse(url).netloc
+
+        for link in soup.find_all('a'):
+            href = link.get('href')
+            parsed_href = urlparse(href)
+
+            if parsed_href.netloc == domain or not parsed_href.scheme:
+                # Internal link found
+                internal_links.append(href)
+
+        return internal_links
+
+    except:
+        print("Error al obtener los enlaces internos de la web")
+
+
+def check_link_status(url):
+    try:
+        response = requests.head(url)
+        return response.status_code
+    except requests.exceptions.RequestException as e:
+        print(f"Error al acceder a la URL {url}: {str(e)}")
+        return None
