@@ -9,19 +9,23 @@ import requests
 
 from urllib.parse import urlparse, urljoin
 
+
 def validate_url(url):
     try:
-        headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
         response = requests.head(url, headers=headers)
-        
+
         if response.status_code == 200:
             return True
         else:
-            print(f"La URL {url} no es accesible. Verifica la URL e intenta nuevamente.")
+            print(
+                f"La URL {url} no es accesible. Verifica la URL e intenta nuevamente.")
     except requests.exceptions.RequestException as e:
         print(f"Error al acceder a la URL {url}: {str(e)}")
-    
+
     return False
+
 
 def process_url(url):
     parsed_url = urlparse(url)
@@ -29,11 +33,12 @@ def process_url(url):
         url = 'https://' + url
     return url
 
-url = input('Inseta la URL para analizar las palabras clave. ej: www.google.com:\n')
+
+url = input(
+    'Inseta la URL para analizar las palabras clave. ej: www.google.com:\n')
 query_url = process_url(url)
 
 if validate_url(query_url):
-    
 
     wb = Workbook()
     keyword_sheet = wb.active
@@ -47,9 +52,9 @@ if validate_url(query_url):
 
     coords = 1
     for word, count in word_list:
-            print(f"{word}: {count}")
-            coords += 1 
-            keyword_sheet.append([word, count])
+        print(f"{word}: {count}")
+        coords += 1
+        keyword_sheet.append([word, count])
 
     sentence_list = get_sentence(query_url)
 
@@ -57,9 +62,8 @@ if validate_url(query_url):
     sentence_sheet.append(['Sentence', 'Times Repeated'])
 
     for phrase, count in sentence_list:
-                phrase_str = " ".join(phrase)
-                sentence_sheet.append([phrase_str, count])
-    
+        phrase_str = " ".join(phrase)
+        sentence_sheet.append([phrase_str, count])
 
     internal_links, external_links = get_links(query_url)
     checked_urls = set()
@@ -88,12 +92,14 @@ if validate_url(query_url):
     formatted_timestamp = current_timestamp.strftime('%Y%m%d%H%M%S')
 
     for col in range(1, 3):
-        keyword_sheet[get_column_letter(col) + '1'].font = Font(bold=True, color="0066AAFF")
-        sentence_sheet[get_column_letter(col) + '1'].font = Font(bold=True, color="0066AAFF")
-        internal_links_sheet[get_column_letter(col) + '1'].font = Font(bold=True, color="0066AAFF")
-        external_links_sheet[get_column_letter(col) + '1'].font = Font(bold=True, color="0066AAFF")
-
-
+        keyword_sheet[get_column_letter(
+            col) + '1'].font = Font(bold=True, color="0066AAFF")
+        sentence_sheet[get_column_letter(
+            col) + '1'].font = Font(bold=True, color="0066AAFF")
+        internal_links_sheet[get_column_letter(
+            col) + '1'].font = Font(bold=True, color="0066AAFF")
+        external_links_sheet[get_column_letter(
+            col) + '1'].font = Font(bold=True, color="0066AAFF")
 
     # eliminamos http o https para crear un nombre de archivo amigable al usuario
     if "http://" in url:
@@ -107,5 +113,3 @@ if validate_url(query_url):
     wb.save(f'{formatted_timestamp}-{url}.xlsx')
 else:
     print("La URL proporcionada no es válida o no se puede acceder a ella. Verifica la URL e intenta nuevamente.")
-
-
