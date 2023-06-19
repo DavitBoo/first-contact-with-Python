@@ -4,7 +4,7 @@ from openpyxl.styles import Font
 
 from datetime import datetime
 
-from find_kw import get_kw, get_sentence, get_internal_links, check_link_status
+from find_kw import get_kw, get_sentence, get_links, check_link_status
 import requests
 
 from urllib.parse import urlparse, urljoin
@@ -36,11 +36,11 @@ if validate_url(query_url):
     
 
     wb = Workbook()
-    ws = wb.active
-    ws.title = "Keywords"
+    keyword_sheet = wb.active
+    keyword_sheet.title = "Keywords"
 
     headings = ['Keyword', 'Times Repeated']
-    ws.append(headings)
+    keyword_sheet.append(headings)
 
     word_list = get_kw(query_url)
     print(word_list)
@@ -49,37 +49,51 @@ if validate_url(query_url):
     for word, count in word_list:
             print(f"{word}: {count}")
             coords += 1 
-            ws.append([word, count])
+            keyword_sheet.append([word, count])
 
     sentence_list = get_sentence(query_url)
 
-    ws2 = wb.create_sheet(title='Sentences')
-    ws2.append(['Sentence', 'Times Repeated'])
+    sentence_sheet = wb.create_sheet(title='Sentences')
+    sentence_sheet.append(['Sentence', 'Times Repeated'])
 
     for phrase, count in sentence_list:
                 phrase_str = " ".join(phrase)
-                ws2.append([phrase_str, count])
+                sentence_sheet.append([phrase_str, count])
     
 
-    internal_links = get_internal_links(query_url)
+    internal_links, external_links = get_links(query_url)
     checked_urls = set()
 
-    ws3 = wb.create_sheet(title='Internal Links')
-    ws3.append(['Link', 'Status'])
+    internal_links_sheet = wb.create_sheet(title='Internal Links')
+    internal_links_sheet.append(['Link', 'Status'])
 
     for link in internal_links:
         link_url = urljoin(query_url, link)
         if link_url not in checked_urls:
             status = check_link_status(link_url)
-            ws3.append([link, status])
+            internal_links_sheet.append([link, status])
+            checked_urls.add(link_url)
+
+    external_links_sheet = wb.create_sheet(title='External Links')
+    external_links_sheet.append(['Link', 'Status'])
+
+    for link in external_links:
+        link_url = urljoin(query_url, link)
+        if link_url not in checked_urls:
+            status = check_link_status(link_url)
+            external_links_sheet.append([link, status])
             checked_urls.add(link_url)
 
     current_timestamp = datetime.now()
     formatted_timestamp = current_timestamp.strftime('%Y%m%d%H%M%S')
 
     for col in range(1, 3):
-        ws[get_column_letter(col) + '1'].font = Font(bold=True, color="0066AAFF")
-        ws2[get_column_letter(col) + '1'].font = Font(bold=True, color="0066AAFF")
+        keyword_sheet[get_column_letter(col) + '1'].font = Font(bold=True, color="0066AAFF")
+        sentence_sheet[get_column_letter(col) + '1'].font = Font(bold=True, color="0066AAFF")
+        internal_links_sheet[get_column_letter(col) + '1'].font = Font(bold=True, color="0066AAFF")
+        external_links_sheet[get_column_letter(col) + '1'].font = Font(bold=True, color="0066AAFF")
+
+
 
     # eliminamos http o https para crear un nombre de archivo amigable al usuario
     if "http://" in url:
